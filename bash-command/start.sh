@@ -1,6 +1,6 @@
 #!/bin/bash
 # Startup script to start whole dss system,
-# start dss server & dss node
+# start dss server & dss node or other stuff
 
 # Basic Help command
 display_help()
