@@ -1,12 +1,13 @@
 %% @author billcyz
 %% @doc @todo Add description to dss_gen_server.
 
+%% Script name: dss_gen_server.erl
 %% I'm a Chinese, please forgive my poor English
 
 %% This programe will start the server, and two hidden nodes.
 %% one hidden node is for exception logging, another hidden node
 %% set up the database for components. The database is used for
-storing component distribution information on its local server. 
+%% storing component distribution information on its local server. 
 
 -module(dss_gen_server).
 -behaviour(gen_server).
@@ -20,6 +21,9 @@ storing component distribution information on its local server.
 %% start dss server
 start() ->
 	gen_server:start({local, ?MODULE}, ?MODULE, [], []).
+
+stop() ->
+	gen_server:cast(?MODULE, stop).
 
 %% start hiden node_01 (distribution)
 start_hid01_node() ->
@@ -37,11 +41,19 @@ start_hid02_node() ->
 
 %%init()
 
+%% component distribution
+distribute_component(Node, Table) ->
+	dss_component:start(Node, Table).
 
 %% ====================================================================
 %% Behavioural functions
 %% ====================================================================
 
+handle_cast(stop, LoopData) ->
+	{stop, normal, LoopData}.
+
+terminate(_Reason, _LoopData) ->
+	example:close().
 
 %% ====================================================================
 %% Internal functions
