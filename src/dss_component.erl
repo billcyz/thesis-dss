@@ -48,7 +48,10 @@ init_table(Tab) ->
 	?MODULE:create_table(Tab, [named_table, protected]),
 	ets:insert(Tab, {com_01, 0}),
 	ets:insert(Tab, {com_02, 0}),
-	ets:insert(Tab, {com_02, 0}).
+	ets:insert(Tab, {com_03, 0}).
+
+%% Distribute components
+
 
 %% ====================================================================
 %% Internal functions
