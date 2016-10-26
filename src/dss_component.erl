@@ -9,13 +9,15 @@
 %% 
 %% The component hash function or value should be included for future
 %% use.
+%%
+%% Component database
 
 -module(dss_component).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([]).
+-export([start/2, check_table_exists/1, create_table/2]).
 
 start(Node, Table) ->
 	process_flag(trap_exit, true),
@@ -33,12 +35,25 @@ check_table_exists(Table) ->
 	end.
 
 create_table(Tab, Opt) ->
-	ets:new(Tab, Opt).
+	ets:new(Tab, Opt),
+	case ?MODULE:check_table_exists(Tab) of
+		{table_not_exists} ->
+			not_ok;
+		{table_exists} ->
+			ok
+	end.
 
+%% Create component table for the system
+init_table(Tab) ->
+	?MODULE:create_table(Tab, [named_table, protected]),
+	ets:insert(Tab, {com_01, 0}),
+	ets:insert(Tab, {com_02, 0}),
+	ets:insert(Tab, {com_02, 0}).
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
 
-
+update_table(Table) ->
+	1.
 
