@@ -23,7 +23,10 @@ stop() ->
 %% ====================================================================
 
 start(_Type, _Args) ->
-	com_db_sup:start_link().
+	case com_db_sup:start_link() of
+		{ok, Pid} ->
+			ok
+	end.
 
 stop(_State) ->
 	ok.
