@@ -3,6 +3,9 @@
 
 
 %% Script name: com_db_srv.erl
+
+%% Simple bank system
+
 %% Register node on the server and create schema by using Mnesia. The
 %% database shoule be able to run simple SQL query, such as read, write,
 %% and update. Instead, multiple databases can be created on one single
@@ -17,11 +20,32 @@
 %% ====================================================================
 -export([register_node/1]).
 
+-record(user, {name, location}).
+-record(balance, {name, balance=0}).
+
 start() ->
 	register(dbcom, spawn(?MODULE, init, [])).
 
+new_account(Who) ->
+	gen_server:call(?MODULE, {new, Who}).
+
+remove_account(Who) ->
+	gen_server:call(?MODULE, {remove, Who}).
+
+deposit(Who, Amount) ->
+	gen_server:call(?MODULE, {add, Who, Amount}).
+
+withdraw(Who, Amount) ->
+	gen_server:call(?MODULE, {remove, Who, Amount}).
+
+new_db(Db) ->
+	gen_server:call(?MODULE, {new, Db}).
+
+init_tab(Tab) ->
+	gen_server:call(?MODULE, {init, Tab}).
+
 %% Process sql query
-process_query(Query)
+%%process_query(Query)
 
 register_node(Db) ->
 	case net_kernel:start([Db, shortnames]) of
@@ -29,6 +53,7 @@ register_node(Db) ->
 		{error, Reason} -> Reason
 	end.
 
+%% Create database
 create_db(Db) ->
 	case ?MODULE:register_node(Db) of
 		ok ->
@@ -39,12 +64,31 @@ create_db(Db) ->
 		_Other -> {error}
 	end.
 
+create_tab() ->
+	mnesia:create_table(user, [{attributes, record_info(fields, user)}]),
+	mnesia:create_table(balance, [{attributes, record_info(fields, balance)}]),
+	mnesia:stop().
+
+start_db() ->
+	mnesia:start(),
+	mnesia:wait_for_tables([user, balance], 20000).
+
 
 %% ====================================================================
 %% Behavioural functions
 %% ====================================================================
 
+init([]) ->
+	1.
 
+%% example of handle_call
+handle_call({new, Who}, _From, Tab) ->
+	Reply = case ets:lookup(Tab, Who) of
+				[] -> ets:insert(Tab, {Who, 0}),
+					  {welcome, who};
+				[_] -> {Who, you_already_are_a_customer}
+			end,
+	{reply, Reply, Tab};
 
 %% ====================================================================
 %% Internal functions
