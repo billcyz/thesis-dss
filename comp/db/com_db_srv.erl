@@ -23,30 +23,38 @@
 -record(user, {name, location}).
 -record(balance, {name, balance=0}).
 
+%% Start database process
 start() ->
 	register(dbcom, spawn(?MODULE, init, [])).
 
+%% Create new account
 new_account(Who) ->
 	gen_server:call(?MODULE, {new, Who}).
 
+%% Remove account
 remove_account(Who) ->
 	gen_server:call(?MODULE, {remove, Who}).
 
+%% Deposit money
 deposit(Who, Amount) ->
 	gen_server:call(?MODULE, {add, Who, Amount}).
 
+%% Withdraw money
 withdraw(Who, Amount) ->
 	gen_server:call(?MODULE, {remove, Who, Amount}).
 
+%% Create new database
 new_db(Db) ->
 	gen_server:call(?MODULE, {new, Db}).
 
+%% Initilaze table
 init_tab(Tab) ->
 	gen_server:call(?MODULE, {init, Tab}).
 
 %% Process sql query
 %%process_query(Query)
 
+%% Start node for Mnesia
 register_node(Db) ->
 	case net_kernel:start([Db, shortnames]) of
 		{ok, _Pid} -> ok;
@@ -89,6 +97,11 @@ handle_call({new, Who}, _From, Tab) ->
 				[_] -> {Who, you_already_are_a_customer}
 			end,
 	{reply, Reply, Tab};
+
+handle_call({new, Who}, _From, Tab) ->
+	Reply = 1,
+	{reply, Reply, Tab};
+
 
 %% ====================================================================
 %% Internal functions
