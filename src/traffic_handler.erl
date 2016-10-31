@@ -1,9 +1,10 @@
 %% @author billcyz
-%% @doc @todo Add description to com_db_srv.
+%% @doc @todo Add description to traffic_handler.
 
-%% Script name: com_db_srv.erl
-
--module(com_db_srv).
+%% Script name: traffic_handler.erl
+%% Triggers the traffic routing service to listen to specific service
+%% port and direct traffic to specific application.
+-module(traffic_handler).
 
 %% ====================================================================
 %% API functions
