@@ -4,6 +4,8 @@
 %% Script name: traffic_handler.erl
 %% Triggers the traffic routing service to listen to specific service
 %% port and direct traffic to specific application.
+%% BRAODCAST MESSAGE
+
 -module(traffic_handler).
 
 %% ====================================================================
