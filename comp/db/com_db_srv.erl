@@ -7,16 +7,16 @@
 -module(com_db_srv).
 -include_lib("stdlib/include/qlc.hrl").
 
--record(user, {name, location}).
+-record(user, {name}).
 -record(balance, {name, balance=0}).
 
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([]).
+-export([create_db/0, new_account/1, dele_account/1, check_account/1, deposit/2, withdraw/2, check_balance/1]).
 
 %% Initialize database
-create_db(Db) ->
+create_db() ->
 	mnesia:create_schema([node()]),
 	mnesia:start(),
 	try
@@ -36,16 +36,16 @@ create_db(Db) ->
 	mnesia:wait_for_tables([user, balance], 20000).
 
 %% Create new account
-new_account(Name, Location) ->
+new_account(Name) ->
 	NA = fun() -> 
-				 mnesia:write(#user{name=Name, location=Location}) 
+				 mnesia:write(#user{name=Name}) 
 		 end,
 	mnesia:transaction(NA).
 
 %% Delete account
-dele_account(Name, Location) ->
+dele_account(Name) ->
 	DA = fun() ->
-				 mnesia:delete({usr, Name, Location})
+				 mnesia:delete({user, Name})
 		 end,
 	case mnesia:transaction(DA) of
 		ok -> {account_deleted};
@@ -53,9 +53,9 @@ dele_account(Name, Location) ->
 	end.
 
 %% Check account existence
-check_account(Name, Location) ->
+check_account(Name) ->
 	CA = fun() ->
-				 mnesia:read({user, Name, Location})
+				 mnesia:read({user, Name})
 		 end,
 	case mnesia:transaction(CA) of
 		[_] -> {account_exists};
@@ -64,11 +64,46 @@ check_account(Name, Location) ->
 
 %% Deposit money
 deposit(Name, Amount) ->
-	1.
-
+	case ?MODULE:check_account(Name) of
+		{account_exists} ->
+			[_Name, Balance] = ?MODULE:check_balance(Name),
+			NewBalance = Balance + Amount,
+			DP = fun() ->
+						 mnesia:write(#balance{name=Name,
+											   balance=NewBalance})
+				 end,
+			mnesia:transaction(DP);
+		{account_not_exists} -> {account_not_exists}
+	end.
+	
 %% Withdraw money
+withdraw(Name, Amount) ->
+	[_Name, Balance] = ?MODULE:check_balance(Name),
+	if
+		Balance < Amount  ->
+			{not_enough_money};
+		true ->
+			NewBalance = Balance - Amount,
+			WT = fun() ->
+						 mnesia:write(#balance{name=Name,
+											   balance=NewBalance})
+				 end,
+			mnesia:transaction(WT)
+	end.
 
 %% Check balance
+check_balance(Name) ->
+	case check_account(Name) of
+		{account_exists} -> 
+			CK = fun() ->
+						 mnesia:read({balance, Name})
+				 end,
+			[Name, _Balance] = mnesia:transaction(CK);
+		{account_not_exists} ->
+			{account_not_exists}
+	end.
+
+
 
 %% ====================================================================
 %% Internal functions
