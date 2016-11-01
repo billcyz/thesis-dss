@@ -54,32 +54,32 @@ init_tab(Tab) ->
 %% Process sql query
 %%process_query(Query)
 
-%% Start node for Mnesia
-register_node(Db) ->
-	case net_kernel:start([Db, shortnames]) of
-		{ok, _Pid} -> ok;
-		{error, Reason} -> Reason
-	end.
-
-%% Create database
-create_db(Db) ->
-	case ?MODULE:register_node(Db) of
-		ok ->
-			case mnesia:create_schema([node()]) of
-				ok -> {ok, success};
-				{error, Reason} -> Reason
-			end;
-		_Other -> {error}
-	end.
-
-create_tab() ->
-	mnesia:create_table(user, [{attributes, record_info(fields, user)}]),
-	mnesia:create_table(balance, [{attributes, record_info(fields, balance)}]),
-	mnesia:stop().
-
-start_db() ->
-	mnesia:start(),
-	mnesia:wait_for_tables([user, balance], 20000).
+%% %% Start node for Mnesia
+%% register_node(Db) ->
+%% 	case net_kernel:start([Db, shortnames]) of
+%% 		{ok, _Pid} -> ok;
+%% 		{error, Reason} -> Reason
+%% 	end.
+%% 
+%% %% Create database
+%% create_db(Db) ->
+%% 	case ?MODULE:register_node(Db) of
+%% 		ok ->
+%% 			case mnesia:create_schema([node()]) of
+%% 				ok -> {ok, success};
+%% 				{error, Reason} -> Reason
+%% 			end;
+%% 		_Other -> {error}
+%% 	end.
+%% 
+%% create_tab() ->
+%% 	mnesia:create_table(user, [{attributes, record_info(fields, user)}]),
+%% 	mnesia:create_table(balance, [{attributes, record_info(fields, balance)}]),
+%% 	mnesia:stop().
+%% 
+%% start_db() ->
+%% 	mnesia:start(),
+%% 	mnesia:wait_for_tables([user, balance], 20000).
 
 
 %% ====================================================================
@@ -98,10 +98,43 @@ handle_call({new, Who}, _From, Tab) ->
 			end,
 	{reply, Reply, Tab};
 
-handle_call({new, Who}, _From, Tab) ->
-	Reply = 1,
-	{reply, Reply, Tab};
+handle_call({new, Who}, _From, State) ->
+	Reply = case com_db_srv:check_account(Who) of
+				{account_exists} ->
+					{account_exists};
+				{account_not_exists} ->
+					com_db_srv:new_account(Who)
+			end,
+	{reply, Reply, State};
 
+handle_call({remove, Who}, _From, State) ->
+	Reply = case com_db_srv:check_account(Who) of
+				{account_exists} ->
+					com_db_srv:dele_account(Who);
+				{account_not_exists} ->
+					{account_not_exists}
+			end,
+	{reply, Reply, State};
+
+handle_call({add, Who, Amount}, _From, State) ->
+	Reply = case com_db_srv:check_account(Who) of
+				{account_exists} ->
+					com_db_srv:deposit(Who, Amount),
+					com_db_srv:check_balance(Who);
+				{account_not_exists} ->
+					{account_not_exists}
+			end,
+	{reply, Reply, State};
+
+handle_call({remove, Who, Amount}, _From, State) ->
+	Reply = case com_db_srv:check_account(Who) of
+				{account_exists} ->
+					com_db_srv:withdraw(Who, Amount)
+					com_db_srv:check_balance(Who);
+				{account_not_exists} ->
+					{account_not_exists}
+			end,
+	{reply, Reply, State}.
 
 %% ====================================================================
 %% Internal functions
