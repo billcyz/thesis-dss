@@ -15,6 +15,8 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
+-define(TCP_OPTIONS, [binary, {packet, 0}, {active, false}, {reuseaddr, true}]).
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
@@ -87,7 +89,14 @@ init_tab(Tab) ->
 %% ====================================================================
 
 init([]) ->
-	1.
+	%% Listen to port 13306
+	case gen_tcp:listen(13306, ?TCP_OPTIONS) of
+		{ok, LSocket} ->
+			{ok, accept(LSocket)};
+		{error, Reason} ->
+			{stop, Reason}
+	end.
+	
 
 %% example of handle_call
 handle_call({new, Who}, _From, Tab) ->
