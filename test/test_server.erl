@@ -62,6 +62,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 start_server(Port) ->
 	case gen_tcp:listen(Port, ?TCP_OPTIONS) of
 		{ok, LSocket} ->
+			io:format("the db is listening to ~p~n", [LSocket]),
 			server_accept(LSocket);
 		{error, Reason} ->
 			{stop, Reason}
