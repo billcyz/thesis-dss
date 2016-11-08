@@ -11,19 +11,28 @@
 %% ====================================================================
 -export([start/1]).
 
--define(TCP_OPTIONS, [binary, {packet, 0}, {active, false}, {reuseaddr, true}]).
+-define(TCP_OPTIONS, [binary, {packet, raw}, {active, false}, {reuseaddr, true}]).
+
+-record(server_state, {
+					   port,
+					   loop,
+					   ip = any,
+					   lsocket = null,
+					   conn = 0,
+					   maxconn}).
 
 start(Port) ->
-	gen_server:start_link({local, ?MODULE}, ?MODULE, Port, []).
+	State = #server_state{port=Port},
+	gen_server:start_link({local, ?MODULE}, ?MODULE, State, []).
 
 %% ====================================================================
 %% Behavioural functions
 %% ====================================================================
 
-init(Port) ->
+init(State = #server_state{port=Port}) ->
 	case is_integer(Port) of
 		true ->
-			start_server(Port);
+			start_server(State);
 		false ->
 			{error, port_not_right}
 	end.
@@ -59,21 +68,30 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 %% Internal functions
 %% ====================================================================
 
-start_server(Port) ->
+start_server(State = #server_state{port=Port}) ->
 	case gen_tcp:listen(Port, ?TCP_OPTIONS) of
 		{ok, LSocket} ->
 			io:format("the db is listening to ~p~n", [LSocket]),
-			server_accept(LSocket);
+			server_accept(State = #server_state{lsocket=LSocket});
 		{error, Reason} ->
-			{stop, Reason}
+			{stop, {create_listen_socket, Reason}}
 	end.
 
-server_accept(LSocket) ->
-	{ok, Socket} = gen_tcp:accept(LSocket),
-	Pid = spawn(fun() -> loop() end),
-	gen_tcp:controlling_process(Socket, Pid).
+server_accept(State = #server_state{lsocket=LSocket, loop=Loop, conn=Conn, maxconn=Max}) ->
+	proc_lib:spawn(test_server, accept_loop, [self(), LSocket, Loop, Conn, Max]),  
+    State.
 
-loop() ->
+accept_loop(Server, LSocket, {M, F}, Conn, Max) ->
+	{ok, Sock} = gen_tcp:accept(LSocket),
+	if
+		Conn + 1 > Max ->
+			io:format("reach the max connection~n"),
+			gen_tcp:close(Sock);
+		true ->
+			gen_server:cast(Server, {accept_new, self()}),
+			M:F(Sock)
+	end.
+
 	receive
 		{request, add, X} ->
 			gen_server:call(?MODULE, {add, X});

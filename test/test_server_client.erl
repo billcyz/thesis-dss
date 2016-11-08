@@ -11,7 +11,7 @@
 
 start_client(Port) ->
 	{ok, Socket} = gen_tcp:connect("localhost", Port, [{active, false},
-													   {packet,1}]),
+													   {packet,raw}]),
 	{ok, Socket}.
 
 send_msg(Port, Message) ->
