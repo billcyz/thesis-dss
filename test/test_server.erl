@@ -9,9 +9,9 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([start/1]).
+-export([start/1, main_loop/1, accept_loop/5]).
 
--define(TCP_OPTIONS, [binary, {packet, raw}, {active, false}, {reuseaddr, true}]).
+-define(TCP_OPTIONS, [binary, {packet, 4}, {active, false}, {reuseaddr, true}]).
 
 -record(server_state, {
 					   port,
@@ -19,7 +19,7 @@
 					   ip = any,
 					   lsocket = null,
 					   conn = 0,
-					   maxconn}).
+					   maxconn = 20}).
 
 start(Port) ->
 	State = #server_state{port=Port},
@@ -71,7 +71,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 start_server(State = #server_state{port=Port}) ->
 	case gen_tcp:listen(Port, ?TCP_OPTIONS) of
 		{ok, LSocket} ->
-			io:format("the db is listening to ~p~n", [LSocket]),
+			io:format("the db is listening to ~p:~p~n", [LSocket, Port]),
 			server_accept(State = #server_state{lsocket=LSocket});
 		{error, Reason} ->
 			{stop, {create_listen_socket, Reason}}
@@ -81,24 +81,27 @@ server_accept(State = #server_state{lsocket=LSocket, loop=Loop, conn=Conn, maxco
 	proc_lib:spawn(test_server, accept_loop, [self(), LSocket, Loop, Conn, Max]),  
     State.
 
-accept_loop(Server, LSocket, {M, F}, Conn, Max) ->
+accept_loop(Server, LSocket, {?MODULE, main_loop}, Conn, Max) ->
 	{ok, Sock} = gen_tcp:accept(LSocket),
 	if
 		Conn + 1 > Max ->
 			io:format("reach the max connection~n"),
 			gen_tcp:close(Sock);
 		true ->
-			gen_server:cast(Server, {accept_new, self()}),
-			M:F(Sock)
+			%%gen_server:cast(Server, {accept_new, self()}),
+			io:format("start to serve one client connection~n"),
+			?MODULE:main_loop(Sock)
+			%%M:F(Sock)
 	end.
 
-	receive
+main_loop(Sock) ->
+	{ok, Packet} = gen_tcp:recv(Sock, 0, 5000),
+	case Packet of
 		{request, add, X} ->
 			gen_server:call(?MODULE, {add, X});
 		{request, double, X} ->
 			gen_server:call(?MODULE, {double, X})
 	end.
-
 
 
 
