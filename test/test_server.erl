@@ -81,7 +81,7 @@ server_accept(State = #server_state{lsocket=LSocket, loop=Loop, conn=Conn, maxco
 	proc_lib:spawn(test_server, accept_loop, [self(), LSocket, Loop, Conn, Max]),  
     State.
 
-accept_loop(Server, LSocket, {?MODULE, main_loop}, Conn, Max) ->
+accept_loop(_Server, LSocket, {?MODULE, main_loop}, Conn, Max) ->
 	{ok, Sock} = gen_tcp:accept(LSocket),
 	if
 		Conn + 1 > Max ->

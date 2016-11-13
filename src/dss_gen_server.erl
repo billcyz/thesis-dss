@@ -7,7 +7,7 @@
 %% This programe will start the server, and two hidden nodes.
 %% one hidden node is for exception logging, another hidden node
 %% set up the database for components. The database is used for
-%% storing component distribution information on its local server. 
+%% storing component distribution information on all servers. 
 
 -module(dss_gen_server).
 -behaviour(gen_server).
