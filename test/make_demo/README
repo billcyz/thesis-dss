@@ -1,0 +1,4 @@
+
+the make_demo folder is used to test emakefile function,
+all modules in this folder should be compiled by the Emakefile.
+
