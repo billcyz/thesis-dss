@@ -5,6 +5,8 @@
 %% Triggers the traffic routing service to listen to specific service
 %% port and direct traffic to specific application.
 %% BRAODCAST MESSAGE
+%% <middleware>? listens to specific port, and broadcast message to
+%% its components or other server nodes. 
 
 -module(traffic_handler).
 

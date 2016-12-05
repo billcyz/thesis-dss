@@ -7,15 +7,29 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([abc/1, dd/1]).
+-export([new_cache_tab/3, new_cache_table/2]).
 
--define(Rec_a,  "-record").
+%% Create ets table
+new_cache_tab(Tab, Type, Acc) ->
+	%% Tab = Table name
+	%% Type = Table type
+	%% Acc = Access type
+	case ets:info(Tab) of
+		[_] ->
+			{table_exists};
+		undefined ->
+			Tid = ets:new(Tab, [Type, Acc]),
+			{ok, Tid}
+	end.
 
-abc(A) ->
-	A + 5.
-
-dd(A) ->
-	?MODULE:abc(A) + 4.
+new_cache_table(Tab, Options) ->
+	case ets:info(Tab) of
+		[_] ->
+			{table_exists};
+		undefined ->
+			Tid = ets:new(Tab, Options),
+			{ok, Tid}
+	end.
 
 %% ====================================================================
 %% Internal functions
