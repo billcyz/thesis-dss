@@ -32,9 +32,13 @@ start() ->
 %% Each user has their own ets table collection
 %% user collection should be "bag" type
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% create user collection, which includes all tables related to the user
+%% user collection & permissions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 create_usr_collection(User) ->
-	Tid = ets:new(User, [named_table, protected, bag]),
+	Tid = ets:new(User, [named_table, public, bag]),
 	{ok, Tid}.
 
 %% check user collection exists
@@ -49,11 +53,49 @@ chk_usr_collection(User) ->
 %% update user collection (insert, delete)
 update_usr_collection(User, Tab_info, insert) ->
 	ets:insert(User, Tab_info);
+
 update_usr_collection(User, Tab_info, delete) ->
 	{Tab, _Options} = Tab_info,
 	ets:delete(User, Tab).
 
-%% permissions should be concerned
+%% check user permission
+chk_usr_permission(User, Owner, Tab) ->
+	[{_, _Permission, AccList}] = ets:lookup(Owner, Tab),
+	case find_user(AccList, User) of
+		{find_user, _} ->
+			grant_access;
+		{user_not_find, _} ->
+			no_access
+	end.
+
+%% add user to access list
+add_user(User, Owner, Tab) ->
+	[{_, Permission, AccList}] = ets:lookup(Owner, Tab),
+	ets:delete(Owner, Tab),
+	NewAccList = AccList ++ [User],
+	Tab_info = {Tab, Permission, NewAccList},
+	ets:insert(Owner, Tab_info),
+	ets:lookup(Owner, Tab).
+
+%% find user in access list
+find_user([H|T], User) ->
+	case H of
+		User ->
+			%% user exists in user list
+			{find_user, User};
+		_ ->
+			find_user(T, User)
+	end;
+
+find_user([], User) ->
+	{user_not_find, User}.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% update data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 new_cache_tab(User, Tab, Options) ->
 	%% check user ets collection
 	{User, Msg} = ?MODULE:chk_usr_collection(User),
@@ -66,11 +108,25 @@ new_cache_tab(User, Tab, Options) ->
 					{table_not_exists},
 					Tid = ets:new(Tab, Options),
 					?MODULE:update_usr_collection(User, {Tab, Options}, insert),
-					{ok, User, Tab}
+					{ok, User, {Tab, Tid}}
 			end;
 		no_collection ->
 			{error, User, collection_not_exists}
 	end.
+
+
+
+
+
+
+
+%% update data accroding to user permission
+update_data(User, Tab, NewData) ->
+	1.
+
+%% update data without user restrictions
+update_data(anonymous, Tab, NewData) ->
+	2.
 
 new_cache_tab(Tab, Type, Acc) ->
 	%% Tab = Table name
