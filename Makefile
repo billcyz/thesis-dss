@@ -20,5 +20,7 @@ all:
 
 clean: 
 	@ rm -rf $(BEAMDIR) ;
+	@ rm -rf $(LOGDIR) ;
+	@ rm -rf $(CONFDIR) ;
 	@ rm -rf erl_crush.dump
 	
