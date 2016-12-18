@@ -34,7 +34,7 @@ start() ->
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% create user collection, which includes all tables related to the user
-%% user collection & permissions
+%% user collection & permissions (insert, delete)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_usr_collection(User) ->
@@ -60,20 +60,25 @@ update_usr_collection(User, Tab_info, delete) ->
 
 %% check user permission
 chk_usr_permission(User, Owner, Tab) ->
-	[{_, _Permission, AccList}] = ets:lookup(Owner, Tab),
+	[{_, _Acctype, AccList}] = ets:lookup(Owner, Tab),
 	case find_user(AccList, User) of
 		{find_user, _} ->
-			grant_access;
+			{grant_access};
 		{user_not_find, _} ->
-			no_access
+			{no_access}
 	end.
 
-%% add user to access list
-add_user(User, Owner, Tab) ->
-	[{_, Permission, AccList}] = ets:lookup(Owner, Tab),
+%% update (add/delete) user to access list
+update_user(User, Owner, Tab, Action) ->
+	[{_, Acctype, AccList}] = ets:lookup(Owner, Tab),
 	ets:delete(Owner, Tab),
-	NewAccList = AccList ++ [User],
-	Tab_info = {Tab, Permission, NewAccList},
+	case Action of
+		add ->
+			NewAccList = AccList ++ [User];
+		delete ->
+			NewAccList = AccList -- [User]
+	end,
+	Tab_info = {Tab, Acctype, NewAccList},
 	ets:insert(Owner, Tab_info),
 	ets:lookup(Owner, Tab).
 
