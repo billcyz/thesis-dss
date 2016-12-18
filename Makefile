@@ -1,6 +1,7 @@
 ## Draft version of makefile of dss system
 ## reference website: https://github.com/fogfish/makefile/blob/master/Makefile
 ## reference website: https://pdincau.wordpress.com/2010/12/20/how-to-manage-your-erlang-software-with-a-simple-makefile/
+## Use "tab" as separator. Use "make" command to run makefile
 
 ERLC=$(shell which erlc)
 ERLCFLAGS=-o
