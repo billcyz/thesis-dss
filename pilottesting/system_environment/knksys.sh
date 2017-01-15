@@ -30,12 +30,68 @@ compile_knk()
 	fi
 }
 
+# Check required language
+check_erl()
+{
+	erl_status=`which erl`
+	if [[ -z "$erl_status" ]] 
+	then
+		# erl is not ready
+		echo "erl_0"
+	else
+		# erl is ready
+		echo "erl_1"
+	fi
+}
+
+check_erl_call()
+{
+	erl_call_status=`which erl_call`
+	if [[ -z "$erl_call_status" ]]
+	then
+		# erl_call is not ready
+		echo "erl_call_0"
+	else
+		# erl_call is ready
+		echo "erl_call_1"
+	fi
+}
+
 # Start function
 start_knk()
 {
-	num=$1
-	echo $num
+	# Check required language
+	erl_result=$(check_erl)
+	erl_call_result=$(check_erl_call)
+	if [[ "$erl_result" == "erl_0" ]]
+	then
+		echo "ErLang is not ready. Please use 'apt-get install erlang' to install Erlang"
+		exit
+	else
+		if [[ "$erl_call_result" == "erl_call_0" ]]
+		then
+			echo "erl_call is not ready"
+			exit
+		else
+			echo "ErLang is ready"
+			echo "Ready to start KNK system...."
+			# Start KNK system
+			# run KNK start file
+			`which escript` sys_interface start
+		fi
+	fi
+
+
 	echo "Start knk system"
+	# Current system time in epoch format
+	sys_time=`date +%s`
+	# Start KNK system node
+	`which erl_call` -s -c abc -sname knk_main
+	# call function in erlang node
+	#erl_call -a 'erlang time' -c abc -sname knk_main
+	# Start KNK system twin node. It is used for monitoring and data backup.
+	`which erl_call` -hidden -name knk_twin
+	
 }
 
 # Stop function
