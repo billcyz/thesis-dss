@@ -1,0 +1,11 @@
+#########################################################
+#				KNK system config file					#
+#########################################################
+
+# [network]
+# Network address or Fully Qualified Domain Name (FQDM)
+# ip=127.0.0.1
+# fqdm=www.knk.com
+ip=
+fqdm=
+
