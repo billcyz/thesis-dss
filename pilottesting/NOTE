@@ -1,0 +1,6 @@
+
+Shell start erlang node:
+>. Node_1 添加了-detached选项,启动之后直接在后台运行并没有启动Shell
+$ erl -setcookie abc -name node_1@192.168.1.123 -detached 
+>. Node_2 使用了和Node_1相同的cookie,启动之后进入Erlang Shell界面
+$ erl -setcookie abc -name node_2@192.168.1.123
