@@ -1,6 +1,8 @@
 #!/bin/bash
 # Shell interface for KnK system
 
+# read config file and get variables -> source knk.cnf
+
 # Basic Help command
 help()
 {
@@ -73,25 +75,39 @@ start_knk()
 			echo "erl_call is not ready"
 			exit
 		else
-			echo "ErLang is ready"
-			echo "Ready to start KNK system...."
-			# Start KNK system
-			# run KNK start file
-			`which escript` sys_interface start
+			# check config file knk.cnf existence
+			if [ -f knk.cnf ]
+			then
+				source knk.cnf
+				echo "ErLang is ready"
+				echo "Ready to start KNK system...."
+				# Start KNK system
+				# run KNK start file
+				#`which escript` sys_interface start
+			
+			
+				# Start knk_main NODE (should use -name option)
+				`which erl` -setcookie knkmain -name knk_main@$ip -detached
+				# Start knk_twin NODE (hidden node)
+				#`which erl` -setcookie knktwin -sname knk_twin@localhost -detached
+			else
+				echo "Can't find knk config file (knk.cnf)..."
+				exit
+			fi
 		fi
 	fi
 
 
 	echo "Start knk system"
-	# Current system time in epoch format
-	sys_time=`date +%s`
+	
 	# Start KNK system node
 	`which erl_call` -s -c abc -sname knk_main
 	# call function in erlang node
 	#erl_call -a 'erlang time' -c abc -sname knk_main
 	# Start KNK system twin node. It is used for monitoring and data backup.
 	`which erl_call` -hidden -name knk_twin
-	
+	# Current system time in epoch format
+	sys_time=`date +%s`
 }
 
 # Stop function
