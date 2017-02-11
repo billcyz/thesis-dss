@@ -1,8 +1,6 @@
 %% @author billcyz
-%% @doc @todo Add description to beta_sup.
 
-
--module(beta_sup).
+-module(knk_main_sup).
 -behaviour(supervisor).
 -export([init/1]).
 
@@ -11,8 +9,9 @@
 %% ====================================================================
 -export([start_link/0]).
 
+
 start_link() ->
-	supervisor:start_link(beta_sup, []).
+	supervisor:start_link({local, }, []).
 
 %% ====================================================================
 %% Behavioural functions
@@ -21,7 +20,7 @@ start_link() ->
 init([]) ->
 	SupFlags = #{strategy => one_for_one, intensity => 1, period => 5},
 	ChildSpecs = [#{id => beta_main,
-					start => {beta_main, start, []},
+					start => {beta_server, start, []},
 					restart => permanent,
 					shutdown => 100000,
 					type => worker,

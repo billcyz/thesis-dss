@@ -11,8 +11,13 @@
 %% ====================================================================
 -export([]).
 
+
+
+start() ->
+	start_link().
+
 start_link() ->
-	gen_server:start_link({local, beta_server}, beta_server, [], []).
+	gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 %% ====================================================================
 %% Behavioural functions
