@@ -1,0 +1,22 @@
+#!/usr/bin/env escript
+# escript work with shell script
+
+main([String]) ->
+	case String of
+		"start" -> start_knk();
+		"stop" -> stop_knk()
+	end;
+	
+# usage
+main([]) ->
+	usage().
+	
+%% Start KNK system
+start_knk() ->
+	
+	
+	
+usage() ->
+	io:format("KNK system~n"),
+	io:format("This is the usage").
+

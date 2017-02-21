@@ -10,6 +10,14 @@ help()
 	echo "-AUT-"
 	echo ""
 	echo "Usage: `basename $0` [OPTIONS]"
+	printf "%-40s %s\n" "help :" "........ System help information"
+	printf "%-40s %s\n" "dev :" "........ Compile system code"
+	printf "%-40s %s\n" "start :" "........ Start system"
+	printf "%-40s %s\n" "stop :" "........ Stop system"
+	printf "%-40s %s\n" "check :" "........ Check system"
+	
+	echo "-----------------------------------------------------------"
+	
 	echo "	help	System help information"
 	echo "	dev	Compile system code"
 	echo "	start	Start system"
@@ -25,9 +33,9 @@ compile_knk()
 	erl_status=`which erl`
 	if [[ -z "$erl_status" ]]
 	then
-		echo "No required language detected"
+		echo "[`date +%Y-%m-%d~%T`] Error: No required language detected"
 	else
-		echo "Detected required language"
+		echo "[`date +%Y-%m-%d~%T`] Info: Detected required language"
 		`which make`
 	fi
 }
@@ -59,6 +67,17 @@ check_erl_call()
 	fi
 }
 
+check_file_exis()
+{
+	target_file=$1
+	if [ -f $target_file ]
+	then
+		echo "has_file"
+	else
+		echo "no_file"
+	fi
+}
+
 # Start function
 start_knk()
 {
@@ -67,27 +86,45 @@ start_knk()
 	erl_call_result=$(check_erl_call)
 	if [[ "$erl_result" == "erl_0" ]]
 	then
-		echo "ErLang is not ready. Please use 'apt-get install erlang' to install Erlang"
+		echo "[`date +%Y-%m-%d~%T`] Error: ErLang is not ready. Please use 'apt-get install erlang' to install Erlang"
 		exit
 	else
 		if [[ "$erl_call_result" == "erl_call_0" ]]
 		then
-			echo "erl_call is not ready"
+			echo "[`date +%Y-%m-%d~%T`] Error: erl_call is not ready"
 			exit
 		else
 			# check config file knk.cnf existence
-			if [ -f knk.cnf ]
+			RESULT=$(check_file_exis knk.cnf)
+			if [[ "$RESULT" == "has_file" ]]
 			then
+				echo "[`date +%Y-%m-%d~%T`] Info: ErLang is ready"
+				echo "[`date +%Y-%m-%d~%T`] Info: Reading config file knk.cnf"
 				source knk.cnf
-				echo "ErLang is ready"
-				echo "Ready to start KNK system...."
+				# check log file knk.log existence
+				RESULT=$(check_file_exis $log_dir)
+				if [[ "RESULT" == "has_file" ]]
+				then
+					echo "[`date +%Y-%m-%d~%T`] Info: Logging file exists"
+					
+				else
+					# bring system output into user defined debug information
+					RESULT=$(touch $log_dir &> /dev/null ; echo $?)
+					
+				fi
+				# Get ip address and Mac address of host
+				server_ip=$()
+				# Get system current timestamp
+				server_cur_time=`date +'%s'`
+				echo "[`date +%Y-%m-%d~%T`] Info: Ready to start KNK system...."
 				# Start KNK system
 				# run KNK start file
 				#`which escript` sys_interface start
 			
 			
-				# Start knk_main NODE (should use -name option)
-				`which erl` -setcookie knkmain -name knk_main@$ip -detached
+				# Start knk_main NODE (should use -name option), can use ip address or the hostname.
+				# reads the $HOME/.erlang.cookie file to set up the cookie
+				`which erl` -name knk_main@$ip -detached
 				# Start knk_twin NODE (hidden node)
 				#`which erl` -setcookie knktwin -sname knk_twin@localhost -detached
 			else
@@ -97,6 +134,7 @@ start_knk()
 		fi
 	fi
 
+	
 
 	echo "Start knk system"
 	
@@ -130,7 +168,7 @@ case "$1" in
 		compile_knk
 	;;
 	start)
-		start_knk 3
+		start_knk
 	;;
 	stop)
 		stop_knk
