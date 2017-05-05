@@ -1,0 +1,25 @@
+
+>>. Extract from binary
+Bin = <<"{request, {M, F, A}}">>
+BinL = binary_to_list(Bin),
+{ok, Token, _} = erl_scan:string(BinL ++ "."),
+{ok, Term} = erl_parse:parse_term(Token),
+Term => {request, {M, F, A}}
+
+%% Check required linux service
+5> [ os:cmd(lists:flatten(io_lib:format("which ~p", [X]))) || X <- [ssh, rsync, llll]].
+["/usr/bin/ssh\n","/usr/bin/rsync\n",[]]
+
+
+get_ip() ->
+	{ok, Addrs} = inet:getifaddrs(),
+	hd([Addr || {_, Opts} <- Addrs, {addr, Addr} <- Opts, size(Addr) =:= 4, Addr =/= {127,0,0,1}]).
+
+get_broadcast_ip() ->
+	{ok, Addrs} = inet:getifaddrs(),
+	[Addr || {_, Opts} <- Addrs, {broadaddr, Addr} <- Opts, size(Addr) =:= 4].
+
+get_nic_ip(Nic) ->
+	{ok, Addrs} = inet:getifaddrs(),
+	[{Nic, Addr} || {NicName, Opts} <- Addrs, NicName =:= Nic, {addr, Addr} <- Opts, size(Addr) =:= 4].
+	

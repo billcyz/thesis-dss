@@ -1,0 +1,10 @@
+{application, beta_app,
+	[{description, "beta_app application"},
+	{vsn, "1.1.1"},
+	{modules, []},
+	{registered, []},
+	{mod, {beta_app, []}},
+	{application, [kernel, stdlib]},
+	{env, [{port, 10000},
+		{log, "/usr/local/log"},
+		{ip, {127,0,0,1}}]}]}.
