@@ -13,13 +13,13 @@ BEAMDIR=./ebin
 all:
 	@ mkdir -p $(BEAMDIR) ;
 	@ $(ERLC) $(ERLCFLAGS) $(BEAMDIR) $(SRCDIR)/*.erl ;
-	@ mkdir -p $(CONFDIR) ;
-	@ mkdir -p $(LOGDIR) ;
-	@ cp conf/mysoftware.conf $(CONFDIR)/mysoftware.conf-example
+	##@ mkdir -p $(CONFDIR) ;
+	##@ mkdir -p $(LOGDIR) ;
+	##@ cp conf/mysoftware.conf $(CONFDIR)/mysoftware.conf-example
 
 clean: 
 	@ rm -rf $(BEAMDIR) ;
-	@ rm -rf $(LOGDIR) ;
-	@ rm -rf $(CONFDIR) ;
-	@ rm -rf erl_crush.dump
+	##@ rm -rf $(LOGDIR) ;
+	##@ rm -rf $(CONFDIR) ;
+	##@ rm -rf erl_crush.dump
 	

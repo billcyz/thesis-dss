@@ -1,8 +1,21 @@
 %% @author billcyz
 %% @doc @todo Add description to knk_comp_def.
 
-%% Define knk system components.
-%% User-defined system components. Have to follow the rules.
+%% Defines components of the application. Each component is the user-defined
+%% function. Developers should provide the information of functions.
+%%
+%% Each function requires one unique function id, (and one virtual path -> symbolic
+%% link) for locating the function, function hash code (authentication), function
+%% type (Read(R), Write(W), Delete(D), Update(U)).
+%%
+%% When one component (function) wants to communicate with other components, the
+%% requestor component should provide the target component's type and id, then the
+%% traffic handler will search through the function storage according to types and 
+%% unique component id. The search result will be used for forwarding traffic. 
+
+
+
+
 
 -module(knk_comp_def).
 

@@ -1,0 +1,14 @@
+{application, knk,
+	[{description, "KNK application"},
+	{vsn, "1.1.1"},
+	{modules, []},
+	{mod, {knk_app, []}},
+	{application, [kernel, stdlib]},
+	{env, [{app_port, 4399},
+		{knk_port, 10000}, %% one broadcast port for one application or use the same port
+		{root_dir, "/home/tester"}
+		{log, "knk_app/log"},
+		{data, "knk_app/data"},
+		{app_dir, "knk_app/user_app/app_dir"},
+		{app, calculator},
+		{nic, "ens33"}]}]}.

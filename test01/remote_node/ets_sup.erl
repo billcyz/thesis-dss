@@ -16,7 +16,7 @@ init([App]) ->
 	{ok, {{one_for_one, 1, 5}, 
 		  [{ets_server,
 			{ets_server, start, [App]},
-			transient, 10, worker, [ets_server]}]}}.
+			permanent, 5000, worker, [ets_server]}]}}.
 
 
 

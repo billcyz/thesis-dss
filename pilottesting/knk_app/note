@@ -23,3 +23,7 @@ get_nic_ip(Nic) ->
 	{ok, Addrs} = inet:getifaddrs(),
 	[{Nic, Addr} || {NicName, Opts} <- Addrs, NicName =:= Nic, {addr, Addr} <- Opts, size(Addr) =:= 4].
 	
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+

@@ -12,13 +12,14 @@
 -record(state, {app}).
 
 -define(SERVER, ?MODULE).
+-define(TABLELIST, [app, comp]).
 
 start(App) ->
 	gen_server:start_link({local, ?SERVER}, ?MODULE, [App], []).
 
 init([App]) ->
 	process_flag(trap_exit, true),
-	create_ets(App),
+	create_ets(?TABLELIST),
 	{ok, #state{app = App}}.
 
 create_table(Tab) ->
@@ -60,11 +61,7 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
 	{ok, State}.
 
-create_ets(App) ->
-	ets:new(App, [named_table]),
-	case ets:info(App) of
-		undefined -> io:format("Can't create App table~n");
-		_ -> ok
-	end.
+create_ets(TabList) ->
+	[ets:new(Tab, [named_table]) || Tab <- TabList].
 
 
